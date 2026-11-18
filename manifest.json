@@ -1,0 +1,24 @@
+{
+  "name": "whats-here",
+  "label": "What's Here",
+  "type": "widget",
+  "version": "1.9.0",
+  "exbVersion": "1.21.0",
+  "author": "Custom",
+  "description": "Click a point on the map, or right-click and choose What's here? in the Map Context Menu, to list the features of every visible layer at that location, or in the polygon of an area layer at that point.",
+  "copyright": "",
+  "license": "MIT",
+  "dependency": [
+    "jimu-arcgis"
+  ],
+  "defaultSize": {
+    "width": 360,
+    "height": 520
+  },
+  "properties": {
+    "canConsumeDataAction": true
+  },
+  "translatedLocales": [
+    "en"
+  ]
+}

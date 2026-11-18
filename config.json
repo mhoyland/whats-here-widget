@@ -1,0 +1,6 @@
+{
+  "tolerance": 6,
+  "maxFeaturesPerLayer": 100,
+  "showEmptyLayers": false,
+  "keepPickingActive": false
+}
