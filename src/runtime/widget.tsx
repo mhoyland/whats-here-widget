@@ -1083,11 +1083,17 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
           ? (
             <button type='button' className='wh-details-toggle' aria-expanded={optionsOpen} aria-controls={`wh-options-${props.id}`}
               title={translate(optionsOpen ? 'whHideOptions' : 'whShowOptions')} onClick={() => { setOptionsOpen(open => !open) }}>
+              <span className='wh-details-label'>{translate('whReportOn')}:</span>
               <span className='wh-details-text'>{barDetail}</span>
               <DownOutlined size={10} className={classNames('wh-summary-chevron', { 'is-open': optionsOpen })} />
             </button>
             )
-          : barDetail && <span className='wh-details-toggle is-static'><span className='wh-details-text'>{barDetail}</span></span>}
+          : barDetail && (
+            <span className='wh-details-toggle is-static'>
+              <span className='wh-details-label'>{translate('whReportOn')}:</span>
+              <span className='wh-details-text'>{barDetail}</span>
+            </span>
+          )}
 
         {hasOptions && optionsOpen && (
           <div className='wh-options-panel' id={`wh-options-${props.id}`}>

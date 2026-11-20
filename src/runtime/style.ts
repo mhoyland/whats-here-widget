@@ -109,22 +109,38 @@ export const widgetStyle = css`
   .wh-layer-select {
     width: 100%;
   }
+  /* The profile in use: a light outlined pill, so it reads as something to click. */
   .wh-details-toggle {
     align-self: flex-start;
     max-width: 100%;
     display: inline-flex;
     align-items: center;
-    gap: var(--sys-spacing-1);
-    padding: 2px 0;
-    border: 0;
-    background: transparent;
-    color: var(--sys-color-surface-paper-hint);
+    gap: 6px;
+    margin-block: 2px;
+    padding: 4px 10px;
+    border: 1px solid var(--sys-color-divider-secondary);
+    border-radius: 14px;
+    background: var(--sys-color-surface-paper);
+    color: var(--sys-color-surface-paper-text);
     font: inherit;
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     cursor: pointer;
   }
+  .wh-details-toggle:hover {
+    border-color: var(--sys-color-primary-main);
+  }
   .wh-details-toggle.is-static {
+    border-color: transparent;
+    background: transparent;
+    padding-inline: 0;
     cursor: default;
+  }
+  .wh-details-label {
+    flex: 0 0 auto;
+    color: var(--sys-color-surface-paper-hint);
+  }
+  .wh-details-text {
+    font-weight: 600;
   }
   .wh-details-text {
     min-width: 0;
