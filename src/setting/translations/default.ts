@@ -140,5 +140,9 @@ export default {
   whsRemoveLayerTitle: 'Remove feature layer?',
   whsRemoveLayerBody: '{layer} will no longer be offered for Feature, and its chosen fields will be lost. This cannot be undone.',
   whsDeleteProfileTitle: 'Delete profile?',
-  whsDeleteProfileBody: '{profile} and its layers and fields will be deleted. Users who chose it will get the default profile. This cannot be undone.'
+  whsDeleteProfileBody: '{profile} and its layers and fields will be deleted. Users who chose it will get the default profile. This cannot be undone.',
+  whsExcludeLayers: 'Exclude layers… ({count} excluded)',
+  whsExcludeTitle: 'Exclude from Customise',
+  whsExcludeHint: "Ticked layers are hidden from users' Customise list, so they cannot be chosen. Profiles are not affected.",
+  whsExcludeLayer: 'Hide {layer} from Customise'
 }

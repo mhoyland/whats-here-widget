@@ -91,6 +91,7 @@ export default function Setting (props: AllWidgetSettingProps<IMConfig>) {
         allowProfileSwitch={config.allowProfileSwitch !== false}
         allowCustomise={config.allowCustomise !== false}
         customisePool={config.customisePool === 'profiles' ? 'profiles' : 'map'}
+        customiseExclude={config.customiseExclude ?? []}
         hasMap={rootIds.length > 0}
         mapLayers={mapLayers}
         loading={loading}

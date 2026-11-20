@@ -1,5 +1,5 @@
 import {
-  clampNumber, escapeHtml, dateFormatOptions, formatNumber, countFeatures, countTotal, fillTemplate, formatBuffer, formatLatLon, isVisibleAtScale, layerCountText, layerTable, pickProfile, resolveWhere, summaryText, toMeters,
+  clampNumber, defaultFields, escapeHtml, dateFormatOptions, formatNumber, countFeatures, countTotal, fillTemplate, formatBuffer, formatLatLon, isVisibleAtScale, layerCountText, layerTable, pickProfile, resolveWhere, summaryText, toMeters,
   type LayerResult
 } from '../src/runtime/utils'
 
@@ -165,5 +165,15 @@ describe('whats-here utils', () => {
     expect(escapeHtml('<a href="x">R&D</a>')).toBe('&lt;a href=&quot;x&quot;&gt;R&amp;D&lt;/a&gt;')
     expect(escapeHtml(null)).toBe('')
     expect(escapeHtml(5)).toBe('5')
+  })
+
+  it('defaults to the pop-up fields, else the first four non-ID fields', () => {
+    const fields = [
+      { name: 'OBJECTID', type: 'esriFieldTypeOID' }, { name: 'NAME' }, { name: 'GlobalID_2', type: 'global-id' },
+      { name: 'STATE' }, { name: 'FIPS' }, { name: 'POP' }, { name: 'AREA' }
+    ]
+    expect(defaultFields(fields, ['POP', 'NAME', 'GONE'])).toEqual(['POP', 'NAME'])
+    expect(defaultFields(fields, [])).toEqual(['NAME', 'STATE', 'FIPS', 'POP'])
+    expect(defaultFields([], ['NAME'])).toEqual([])
   })
 })

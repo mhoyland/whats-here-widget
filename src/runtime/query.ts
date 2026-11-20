@@ -130,11 +130,15 @@ export const collectTargets = (map: __esri.Map, scale: number, includeHidden = f
     // Map layer collections are ordered bottom first; reverse so results follow the layer list.
     layers?.toArray().slice().reverse().forEach((layer: any) => {
       if (layer.listMode === 'hide' || !shown(layer)) return
+      // A layer that failed to load (e.g. a feed that is down) cannot be searched.
+      if (layer.loadStatus === 'failed') return
+      // Nested groups keep their whole path, e.g. "USA 2020 Census › Population", as the layer list shows them.
+      const path = parentTitle ? `${parentTitle} › ${layer.title}` : layer.title
 
       if (layer.type === 'group') {
-        if (layer.listMode !== 'hide-children') walk(layer.layers, layer.title)
+        if (layer.listMode !== 'hide-children') walk(layer.layers, path)
       } else if (layer.type === 'map-image') {
-        if (layer.listMode !== 'hide-children') walkSublayers(layer.sublayers, layer.id, layer.title)
+        if (layer.listMode !== 'hide-children') walkSublayers(layer.sublayers, layer.id, path)
       } else if (QUERYABLE_TYPES.has(layer.type) && !layer.isTable && typeof layer.queryFeatures === 'function') {
         targets.push({ key: layer.id, title: layer.title, parentTitle, layer })
       }

@@ -9,7 +9,7 @@ import {
   DRAW_TOOLS, WHERE_MODES,
   type AreaLayer, type AreaRelationship, type Config, type DrawTool, type MultipleAreas, type WhereMode
 } from '../config'
-import type { WhereSettings } from '../runtime/utils'
+import { type WhereSettings, defaultFields } from '../runtime/utils'
 import FieldPicker from '../components/field-picker'
 import { type MapLayer, isPolygonLayer } from './map-layers'
 import LayerPicker from './layer-picker'
@@ -201,7 +201,8 @@ export default function WhereSetting (props: Props) {
     const next: AreaLayer[] = [
       ...polygonLayers
         .filter(l => l.dataSourceId === layer.dataSourceId ? !on : !!entryFor(l.dataSourceId))
-        .map(l => entryFor(l.dataSourceId) ?? { dataSourceId: l.dataSourceId, rootDataSourceId: l.rootDataSourceId, fields: [] }),
+        // A newly ticked layer starts with its pop-up fields (or its first few).
+        .map(l => entryFor(l.dataSourceId) ?? { dataSourceId: l.dataSourceId, rootDataSourceId: l.rootDataSourceId, fields: defaultFields(l.fields, l.popupFields) }),
       ...areaLayers.filter(l => !known.has(l.dataSourceId))
     ]
     onChange({ areaLayers: next })

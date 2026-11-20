@@ -197,6 +197,25 @@ export const dateFormatOptions = (dateFormat: string | null | undefined): Intl.D
   return options
 }
 
+// ID fields mean nothing to readers, so they are never picked as defaults.
+const ID_FIELD_TYPES = new Set(['oid', 'global-id', 'guid', 'esriFieldTypeOID', 'esriFieldTypeGlobalID', 'esriFieldTypeGUID'])
+const ID_FIELD_NAMES = /^(objectid|object_id|fid|oid|globalid|global_id)$/i
+const DEFAULT_FIELD_COUNT = 4
+
+/**
+ * The fields ticked when a layer is first ticked: its pop-up fields in pop-up order, or, without a pop-up,
+ * the first few fields that are not IDs. Users can change them; nothing is ticked if there are no fields yet.
+ */
+export const defaultFields = (fields: ReadonlyArray<{ name: string, type?: string }>, popupFields: readonly string[]): string[] => {
+  const names = new Set(fields.map(f => f.name))
+  const fromPopup = popupFields.filter(name => names.has(name))
+  if (fromPopup.length) return fromPopup
+  return fields
+    .filter(f => !ID_FIELD_TYPES.has(f.type) && !ID_FIELD_NAMES.test(f.name))
+    .slice(0, DEFAULT_FIELD_COUNT)
+    .map(f => f.name)
+}
+
 export const clampNumber = (value: unknown, min: number, max: number, fallback: number): number => {
   const n = Number(value)
   if (!Number.isFinite(n)) return fallback

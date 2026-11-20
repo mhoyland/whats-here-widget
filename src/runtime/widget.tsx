@@ -184,6 +184,8 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
   // ---------- My setup: a user's own layers and fields, on their device ----------
   const allowCustomise = config?.allowCustomise !== false
   const customisePool = config?.customisePool === 'profiles' ? 'profiles' : 'map'
+  // A plain copy: array methods on immutable config return immutable results.
+  const customiseExclude = React.useMemo(() => Array.from(config?.customiseExclude ?? []), [config?.customiseExclude])
   const [mySetup, setMySetup] = React.useState<StoredSetup | null>(() => readMySetup(props.id))
   // Without profiles the widget searches every visible layer; that is the starting point to customise from.
   const allVisibleLabel = translate('whAllVisibleLayers')
@@ -995,6 +997,7 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
             startLabel={activeProfile?.id === MY_SETUP_ID ? mySetup?.baseLabel : activeProfile?.label}
             pool={customisePool}
             profiles={profiles}
+            exclude={customiseExclude}
             translate={translate}
             onCancel={() => { setCustomiseOpen(false) }}
             onReset={resetMySetup}

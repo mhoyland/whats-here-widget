@@ -133,5 +133,10 @@ export default {
   whExpandAll: 'Expand all',
   whCollapseAll: 'Collapse all',
   whPromptRectangle: 'Draw a rectangle',
-  whPromptFreehand: 'Draw a shape'
+  whPromptFreehand: 'Draw a shape',
+  whCustomiseTurnedOff: 'Turned off in the map',
+  whCustomiseGroupTick: 'Search every layer in {group}',
+  whsFilterLayers: 'Filter layers',
+  whsNoLayerMatches: 'No layers match.',
+  whsTickedOf: '{ticked} of {total}'
 }

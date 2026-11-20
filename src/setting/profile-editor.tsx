@@ -6,6 +6,7 @@ import { RightOutlined } from 'jimu-icons/outlined/directional/right'
 import type { LayerScope, Profile, ProfileLayer } from '../config'
 import FieldPicker from '../components/field-picker'
 import LayerPicker from './layer-picker'
+import { defaultFields } from '../runtime/utils'
 import { GEOMETRY_KEYS, type MapLayer } from './map-layers'
 
 interface Props {
@@ -176,7 +177,8 @@ export default function ProfileEditor (props: Props) {
     const known = new Set(mapLayers.map(l => l.dataSourceId))
     const next = mapLayers
       .filter(l => l.dataSourceId === layer.dataSourceId ? !included : !!entryFor(l.dataSourceId))
-      .map(l => entryFor(l.dataSourceId) ?? { dataSourceId: l.dataSourceId, rootDataSourceId: l.rootDataSourceId })
+      // A newly ticked layer starts with its pop-up fields (or its first few), so it never looks empty.
+      .map(l => entryFor(l.dataSourceId) ?? { dataSourceId: l.dataSourceId, rootDataSourceId: l.rootDataSourceId, fields: defaultFields(l.fields, l.popupFields) })
     update({ layers: [...next, ...profileLayers.filter(l => !known.has(l.dataSourceId))] })
   }
   const setLayerFields = (dataSourceId: string, fields: string[]) => {

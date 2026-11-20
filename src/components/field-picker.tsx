@@ -6,6 +6,8 @@ import { UpOutlined } from 'jimu-icons/outlined/directional/up'
 export interface MapLayerField {
   name: string
   alias: string
+  /** The field type, used to skip ID fields when picking default fields. */
+  type?: string
 }
 
 // Fields that never help in a result list.
@@ -18,7 +20,7 @@ export const fieldsOf = (ds: DataSource): MapLayerField[] => {
   const fields = schemaFields.length ? schemaFields : ((ds as any).getLayerDefinition?.()?.fields ?? [])
   return fields
     .filter((f: any) => f?.name && !HIDDEN_FIELD.test(f.name) && !HIDDEN_TYPES.includes(f.esriType ?? f.type))
-    .map((f: any) => ({ name: f.name, alias: f.alias || f.name }))
+    .map((f: any) => ({ name: f.name, alias: f.alias || f.name, type: f.esriType ?? f.type }))
 }
 
 /** The field names the layer's popup shows, in popup order, from the web map's popup settings. */

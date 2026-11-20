@@ -7,6 +7,7 @@ import { HandleDotVerticalOutlined } from 'jimu-icons/outlined/application/handl
 import type { Config, Profile } from '../config'
 import ProfileEditor from './profile-editor'
 import type { MapLayer } from './map-layers'
+import LayerPicker from './layer-picker'
 
 interface Props {
   widgetId: string
@@ -14,6 +15,8 @@ interface Props {
   allowProfileSwitch: boolean
   allowCustomise: boolean
   customisePool: 'map' | 'profiles'
+  /** Layers hidden from Customise (data source ids). */
+  customiseExclude: string[]
   hasMap: boolean
   /** Feature layers of the selected map. */
   mapLayers: MapLayer[]
@@ -21,10 +24,24 @@ interface Props {
   translate: (id: string, values?: any) => string
   onProfilesChange: (profiles: Profile[]) => void
   onAllowProfileSwitchChange: (allow: boolean) => void
-  onCustomiseChange: (patch: Pick<Config, 'allowCustomise' | 'customisePool'>) => void
+  onCustomiseChange: (patch: Pick<Config, 'allowCustomise' | 'customisePool' | 'customiseExclude'>) => void
 }
 
 const NAMES_IN_SUMMARY = 3
+
+// The exclude side panel renders outside this section, so it carries its own styles.
+const panelStyle = css`
+  display: flex;
+  flex-direction: column;
+  gap: var(--sys-spacing-3);
+  padding: var(--sys-spacing-3) var(--sys-spacing-4);
+
+  .whs-hint {
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: var(--sys-color-surface-paper-hint);
+  }
+`
 
 const makeId = () => `profile-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
 
@@ -140,6 +157,18 @@ export default function ProfilesSetting (props: Props) {
   const [draggedId, setDraggedId] = React.useState<string | null>(null)
   const [dragOverId, setDragOverId] = React.useState<string | null>(null)
   const listRef = React.useRef<HTMLDivElement>(null)
+  // A second side panel: the layers hidden from users' Customise list.
+  const [excludeOpen, setExcludeOpen] = React.useState(false)
+  const [excludeFocus, setExcludeFocus] = React.useState<HTMLElement | null>(null)
+  const excludeRef = React.useRef<HTMLDivElement>(null)
+  const excluded = new Set(props.customiseExclude)
+  const toggleExcluded = (layer: MapLayer) => {
+    props.onCustomiseChange({
+      customiseExclude: excluded.has(layer.dataSourceId)
+        ? props.customiseExclude.filter(id => id !== layer.dataSourceId)
+        : [...props.customiseExclude, layer.dataSourceId]
+    })
+  }
   // Deleting cannot be undone, so it is confirmed first.
   const [pendingDelete, setPendingDelete] = React.useState<Profile | null>(null)
 
@@ -311,6 +340,14 @@ export default function ProfilesSetting (props: Props) {
                 </Label>
               ))}
             </SettingRow>
+            <SettingRow flow='wrap'>
+              <div ref={excludeRef} className='w-100'>
+                <Button size='sm' type='default' className='w-100' disabled={!props.hasMap}
+                  onClick={e => { setExcludeFocus(e.currentTarget); setExcludeOpen(true) }}>
+                  {translate('whsExcludeLayers', { count: props.customiseExclude.length })}
+                </Button>
+              </div>
+            </SettingRow>
             <SettingRow><div className='whs-hint'>{translate('whsCustomiseHint')}</div></SettingRow>
           </>
         )}
@@ -329,6 +366,26 @@ export default function ProfilesSetting (props: Props) {
         }}
         toggle={() => { setPendingDelete(null) }}
       />
+
+      <SidePopper
+        position='right'
+        isOpen={excludeOpen && props.allowCustomise}
+        toggle={() => { setExcludeOpen(false) }}
+        trigger={excludeRef.current}
+        backToFocusNode={excludeFocus}
+        title={translate('whsExcludeTitle')}
+      >
+        <div css={panelStyle}>
+          <div className='whs-hint'>{translate('whsExcludeHint')}</div>
+          <LayerPicker
+            layers={mapLayers}
+            isTicked={layer => excluded.has(layer.dataSourceId)}
+            onToggle={toggleExcluded}
+            tickLabel={layer => translate('whsExcludeLayer', { layer: layer.label })}
+            translate={translate}
+          />
+        </div>
+      </SidePopper>
 
       <SidePopper
         position='right'

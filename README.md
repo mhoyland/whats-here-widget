@@ -75,11 +75,18 @@ Saved as `whereModes`, `defaultWhere`, `drawTools`, `areaLayers: [{ dataSourceId
 ### Customise (My setup)
 
 With **Users can customise layers and fields** on (the default, under Profiles), a **Customise** link sits beside
-*Report on*. It opens a panel listing the map's feature layers, turned off or not (or, with *Only layers in the
-profiles*, just those). Users tick layers and open one to choose its fields (select all, filter, pop-up fields; the
-first field is the one-line row). **Done** saves the choice on their device as **My setup (based on …)**, selects it
-in the profile list and repeats the current search; opening Customise again edits My setup. **Reset to profile**
-removes it; the back arrow leaves without saving. Without profiles, Customise starts from all visible layers.
+*Report on*. It opens a panel listing the map's feature layers in layer-list order, grouped like the Layers widget
+(group layers and map image services as headings; nested groups as one heading with their path, e.g.
+*USA 2020 Census › Population*). Each group heading opens and closes, shows how many of its layers are ticked, and
+has a tick box for the whole group. Lists of more than 12 layers get a filter box. Layers turned off in the map are
+noted but can still be chosen. A newly ticked layer starts with its pop-up fields (or, without a pop-up, its first
+four non-ID fields); open a layer to change them (select all, filter, pop-up fields; the first field is the one-line
+row). **Done** saves the choice on the user's device as **My setup (based on …)**, selects it and repeats the current
+search; opening Customise again edits My setup. **Reset to profile** removes it; the back arrow leaves without saving.
+
+**Exclude layers…** (builder, under *Users can customise*) opens a side panel (filter, groups, *Show ticked only*)
+where ticked layers are hidden from every user's Customise list, e.g. feeds that cannot be searched. Saved as
+`customiseExclude` (data source ids); profiles are not affected.
 
 Saved in the browser's local storage as `whats-here:<widget id>:my-setup`
 (`{ baseId, baseLabel, layers: [{ dataSourceId, fields }], savedAt }`). Layers are matched to the map by data source,

@@ -115,6 +115,8 @@ export interface Config {
   allowCustomise?: boolean
   /** Layers users can choose from: any feature layer in the map (default), or only layers in the profiles. */
   customisePool?: 'map' | 'profiles'
+  /** Layers hidden from Customise, as data source ids. Set by the designer; users cannot change it. */
+  customiseExclude?: string[]
   /** Show the report button. On unless set to false. */
   showReport?: boolean
   /** The small heading at the top of the report, e.g. a company or app name. Empty uses "What's Here report". */
