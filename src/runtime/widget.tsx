@@ -157,16 +157,24 @@ const featureKey = (layer: LayerResult, feature: FeatureResult) => `${layer.key}
 // The area polygon(s) are listed like a layer so they share selection, hover and details with result rows.
 const AREA_KEY = '__whats-here-area'
 
-const highlightSymbol = (geometry: __esri.Geometry, r: number, g: number, b: number): any => {
+/** The highlight for one feature, or a lighter one when a whole layer's features are shown at once. */
+const highlightSymbol = (geometry: __esri.Geometry, r: number, g: number, b: number, light = false): any => {
   if (geometry.type === 'polygon' || geometry.type === 'extent') {
-    return { type: 'simple-fill', color: [r, g, b, 0.18], outline: { color: [r, g, b, 1], width: 2 } }
+    return light
+      ? { type: 'simple-fill', color: [r, g, b, 0.1], outline: { color: [r, g, b, 0.9], width: 1.5 } }
+      : { type: 'simple-fill', color: [r, g, b, 0.18], outline: { color: [r, g, b, 1], width: 2 } }
   }
-  if (geometry.type === 'polyline') return { type: 'simple-line', color: [r, g, b, 1], width: 3 }
+  if (geometry.type === 'polyline') return { type: 'simple-line', color: [r, g, b, light ? 0.9 : 1], width: light ? 2 : 3 }
   if (geometry.type === 'point' || geometry.type === 'multipoint') {
-    return { type: 'simple-marker', style: 'circle', size: 16, color: [r, g, b, 0.15], outline: { color: [r, g, b, 1], width: 2.5 } }
+    return light
+      ? { type: 'simple-marker', style: 'circle', size: 12, color: [r, g, b, 0.12], outline: { color: [r, g, b, 0.9], width: 1.5 } }
+      : { type: 'simple-marker', style: 'circle', size: 16, color: [r, g, b, 0.15], outline: { color: [r, g, b, 1], width: 2.5 } }
   }
   return null
 }
+
+// Wait this long before highlighting a layer, so moving quickly down the list does not flash every layer.
+const LAYER_HOVER_DELAY_MS = 150
 
 const Widget = (props: AllWidgetProps<IMConfig>) => {
   const translate = hooks.useTranslation(defaultMessages)
@@ -255,6 +263,8 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
   const [collapsed, setCollapsed] = React.useState<{ [key: string]: boolean }>({})
   const [selectedKey, setSelectedKey] = React.useState<string | null>(null)
   const [hoveredKey, setHoveredKey] = React.useState<string | null>(null)
+  // A layer heading being hovered: all of that layer's features are highlighted.
+  const [hoveredLayerKey, setHoveredLayerKey] = React.useState<string | null>(null)
   const [areaExpanded, setAreaExpanded] = React.useState(false)
   const [message, setMessage] = React.useState<{ text: string, ok: boolean } | null>(null)
   // The options under the bar start open, so first-time users see them, and close once a search starts.
@@ -316,6 +326,7 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
     setResults([])
     setSelectedKey(null)
     setHoveredKey(null)
+    setHoveredLayerKey(null)
     setCollapsed({})
     setSearchedCount(0)
 
@@ -411,6 +422,7 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
     setResults([])
     setSelectedKey(null)
     setHoveredKey(null)
+    setHoveredLayerKey(null)
     setSearchedCount(0)
     setStatus('idle')
   }
@@ -423,6 +435,7 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
     setResults([])
     setSelectedKey(null)
     setHoveredKey(null)
+    setHoveredLayerKey(null)
     setStatus('idle')
     setJimuMapView(jmv)
   }
@@ -457,12 +470,16 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
   const selectedFeature = React.useMemo(() => findFeature(selectedKey), [findFeature, selectedKey])
   const hoveredFeature = React.useMemo(() => findFeature(hoveredKey), [findFeature, hoveredKey])
 
+  const hoveredLayer = React.useMemo(() => results.find(layer => layer.key === hoveredLayerKey) ?? null, [results, hoveredLayerKey])
+
   // Hover highlight lives in its own layer so moving along the list does not redraw the area and markers.
+  // A hovered feature row shows that feature; a hovered layer heading shows all of its listed features, more lightly.
   React.useEffect(() => {
     if (!view?.map) return
     let layer = hoverLayerRef.current
-    const geometry = hoveredFeature !== selectedFeature ? hoveredFeature?.graphic?.geometry : null
-    if (!geometry) {
+    const single = hoveredFeature && hoveredFeature !== selectedFeature ? hoveredFeature.graphic?.geometry : null
+    const many = !single && hoveredLayer ? hoveredLayer.features.map(f => f.graphic?.geometry).filter(Boolean) : []
+    if (!single && !many.length) {
       layer?.removeAll()
       return
     }
@@ -473,9 +490,23 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
     if (!view.map.layers.includes(layer)) view.map.add(layer)
     layer.removeAll()
     const { r, g, b } = highlightColor
-    const symbol = highlightSymbol(geometry, r, g, b)
-    if (symbol) layer.add(new Graphic({ geometry, symbol }))
-  }, [view, hoveredFeature, selectedFeature, highlightColor, props.id])
+    const graphics = (single ? [single] : many)
+      .map(geometry => ({ geometry, symbol: highlightSymbol(geometry, r, g, b, !single) }))
+      .filter(item => item.symbol)
+      .map(item => new Graphic(item))
+    layer.addMany(graphics)
+  }, [view, hoveredFeature, selectedFeature, hoveredLayer, highlightColor, props.id])
+
+  const layerHoverTimerRef = React.useRef<number>(null)
+  React.useEffect(() => () => { window.clearTimeout(layerHoverTimerRef.current) }, [])
+  const hoverLayerOn = (key: string) => {
+    window.clearTimeout(layerHoverTimerRef.current)
+    layerHoverTimerRef.current = window.setTimeout(() => { setHoveredLayerKey(key) }, LAYER_HOVER_DELAY_MS)
+  }
+  const hoverLayerOff = (key: string) => {
+    window.clearTimeout(layerHoverTimerRef.current)
+    setHoveredLayerKey(current => current === key ? null : current)
+  }
 
   React.useEffect(() => {
     if (!view?.map) return
@@ -945,10 +976,14 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
     const countText = layerCountText(layer)
     return (
       <li key={layer.key} className='wh-layer'>
-        <div className='wh-layer-row'>
+        <div className='wh-layer-row'
+          onMouseEnter={empty ? undefined : () => { hoverLayerOn(layer.key) }}
+          onMouseLeave={empty ? undefined : () => { hoverLayerOff(layer.key) }}>
           <button
             type='button'
             className='wh-layer-header'
+            onFocus={empty ? undefined : () => { hoverLayerOn(layer.key) }}
+            onBlur={empty ? undefined : () => { hoverLayerOff(layer.key) }}
             aria-expanded={!isCollapsed}
             aria-label={translate(isCollapsed ? 'whExpandLayer' : 'whCollapseLayer', { layer: layer.title })}
             onClick={() => { toggleLayer(layer.key) }}

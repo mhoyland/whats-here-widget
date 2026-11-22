@@ -126,6 +126,7 @@ Each layer's own definition expression is applied.
   - its display field
   - its object ID
 - Select a feature to highlight it on the map and see its attributes. The attributes are the popup's visible fields, or all fields if the layer has no popup. Coded values are shown by name and dates use the local format.
+- Hover a layer heading (or tab to it) to highlight all of that layer's listed features on the map in a lighter style; hovering a feature row shows just that feature.
 - The zoom button zooms to the feature. The copy button copies a plain-text summary.
 - A marker shows the searched location. It is removed when you clear the results or close the map.
 
